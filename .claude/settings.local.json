@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls:*)",
+      "WebFetch(domain:developer.maya.net)",
+      "WebSearch",
+      "WebFetch(domain:maya.net)",
+      "WebFetch(domain:api.maya.net)",
+      "Bash(grep:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(chmod:*)",
+      "Bash(gradle wrapper:*)",
+      "Bash(curl:*)",
+      "Bash(unzip:*)",
+      "Bash(/tmp/gradle-8.11/bin/gradle wrapper:*)"
+    ]
+  }
+}
