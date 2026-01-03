@@ -54,8 +54,8 @@ public class EsimService {
     public MockEsim provisionEsim(ProvisionEsimRequest request) {
         logger.info("Provisioning new eSIM for product: {}", request.getProductId());
 
-        // Validate product exists
-        MockProduct product = productService.getProductById(request.getProductId());
+        // Validate product exists (supports both productId and uid lookup)
+        MockProduct product = productService.getProductByIdOrUid(request.getProductId());
 
         // Check for idempotency - if orderId is provided, check if eSIM already exists
         if (request.getMetadata() != null && request.getMetadata().containsKey("orderId")) {
@@ -111,6 +111,30 @@ public class EsimService {
     }
 
     /**
+     * Get eSIM by ID, UID, or ICCID (unified lookup)
+     * Tries esimId first, then uid, then iccid
+     */
+    public MockEsim getEsimByIdOrUidOrIccid(String identifier) {
+        logger.debug("Looking up eSIM by identifier: {}", identifier);
+
+        // Try esimId first
+        Optional<MockEsim> esim = esimRepository.findByEsimId(identifier);
+        if (esim.isPresent()) {
+            return esim.get();
+        }
+
+        // Try uid
+        esim = esimRepository.findByUid(identifier);
+        if (esim.isPresent()) {
+            return esim.get();
+        }
+
+        // Try iccid
+        return esimRepository.findByIccid(identifier)
+            .orElseThrow(() -> new EsimNotFoundException(identifier));
+    }
+
+    /**
      * Get eSIM by ID (optional)
      */
     public Optional<MockEsim> findEsimById(String esimId) {
@@ -147,7 +171,7 @@ public class EsimService {
     public MockEsim deactivateEsim(String esimId) {
         logger.info("Deactivating eSIM: {}", esimId);
 
-        MockEsim esim = getEsimById(esimId);
+        MockEsim esim = getEsimByIdOrUidOrIccid(esimId);
         esim.setStatus("deactivated");
         esim.setUpdatedAt(LocalDateTime.now());
 
@@ -168,7 +192,7 @@ public class EsimService {
     public MockEsim simulateUsage(String esimId, int usageMB) {
         logger.info("Simulating {} MB usage on eSIM: {}", usageMB, esimId);
 
-        MockEsim esim = getEsimById(esimId);
+        MockEsim esim = getEsimByIdOrUidOrIccid(esimId);
 
         if (!"active".equals(esim.getStatus())) {
             throw new InvalidRequestException("Cannot simulate usage on non-active eSIM",
@@ -217,7 +241,7 @@ public class EsimService {
     public MockEsim forceStatusChange(String esimId, String newStatus) {
         logger.info("Forcing status change on eSIM {} to: {}", esimId, newStatus);
 
-        MockEsim esim = getEsimById(esimId);
+        MockEsim esim = getEsimByIdOrUidOrIccid(esimId);
         esim.setStatus(newStatus);
         esim.setUpdatedAt(LocalDateTime.now());
 
@@ -275,9 +299,9 @@ public class EsimService {
         esim.setTag(request.getTag());
         esim.setDateAssigned(LocalDateTime.now());
 
-        // If plan_type_id is provided, attach the plan
+        // If plan_type_id is provided, attach the plan (supports both productId and uid lookup)
         if (request.getPlanTypeId() != null && !request.getPlanTypeId().isEmpty()) {
-            MockProduct product = productService.getProductById(request.getPlanTypeId());
+            MockProduct product = productService.getProductByIdOrUid(request.getPlanTypeId());
             MockEsim.AttachedPlan plan = createAttachedPlan(product);
             esim.addPlan(plan);
             esim.setStatus("active");
@@ -304,8 +328,8 @@ public class EsimService {
             throw new InvalidRequestException("Cannot attach plan to deactivated eSIM", Map.of("iccid", iccid));
         }
 
-        // Get the product
-        MockProduct product = productService.getProductById(planTypeId);
+        // Get the product (supports both productId and uid lookup)
+        MockProduct product = productService.getProductByIdOrUid(planTypeId);
 
         // Create and attach plan
         MockEsim.AttachedPlan plan = createAttachedPlan(product);

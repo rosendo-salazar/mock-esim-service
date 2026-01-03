@@ -70,6 +70,26 @@ public class ProductService {
     }
 
     /**
+     * Get product by ID or UID (unified lookup)
+     * Tries productId first, then falls back to uid
+     */
+    public MockProduct getProductByIdOrUid(String identifier) {
+        logger.debug("Looking up product by identifier: {}", identifier);
+
+        // Try productId first
+        Optional<MockProduct> product = productRepository.findByProductId(identifier);
+        if (product.isPresent()) {
+            logger.debug("Found product by productId: {}", identifier);
+            return product.get();
+        }
+
+        // Fall back to uid
+        logger.debug("ProductId not found, trying uid lookup for: {}", identifier);
+        return productRepository.findByUid(identifier)
+            .orElseThrow(() -> new ProductNotFoundException(identifier));
+    }
+
+    /**
      * Get products by country code
      */
     public Page<MockProduct> getProductsByCountry(String countryCode, int page, int size) {

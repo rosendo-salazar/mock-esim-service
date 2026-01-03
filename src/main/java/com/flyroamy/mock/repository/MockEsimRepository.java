@@ -17,6 +17,8 @@ public interface MockEsimRepository extends MongoRepository<MockEsim, String> {
 
     Optional<MockEsim> findByIccid(String iccid);
 
+    Optional<MockEsim> findByUid(String uid);
+
     boolean existsByEsimId(String esimId);
 
     boolean existsByIccid(String iccid);
