@@ -19,6 +19,10 @@ public class MockEsim {
     @Indexed(unique = true)
     private String esimId;
 
+    @Field("uid")
+    @Indexed(unique = true)
+    private String uid; // Maya API UID
+
     @Field("iccid")
     @Indexed(unique = true)
     private String iccid;
@@ -35,9 +39,39 @@ public class MockEsim {
     @Field("activation_code")
     private String activationCode;
 
+    @Field("manual_code")
+    private String manualCode;
+
+    @Field("smdp_address")
+    private String smdpAddress;
+
+    @Field("auto_apn")
+    private Boolean autoApn;
+
+    @Field("apn")
+    private String apn;
+
     @Field("status")
     @Indexed
     private String status; // provisioned, active, suspended, deactivated, expired
+
+    @Field("state")
+    private String state; // Maya API state field
+
+    @Field("service_status")
+    private String serviceStatus; // active, suspended, expired
+
+    @Field("network_status")
+    private String networkStatus; // connected, disconnected, roaming
+
+    @Field("customer_id")
+    private String customerId;
+
+    @Field("tag")
+    private String tag;
+
+    @Field("date_assigned")
+    private LocalDateTime dateAssigned;
 
     @Field("user_email")
     private String userEmail;
@@ -48,8 +82,8 @@ public class MockEsim {
     @Field("metadata")
     private java.util.Map<String, Object> metadata;
 
-    @Field("attached_bundles")
-    private List<AttachedBundle> attachedBundles = new ArrayList<>();
+    @Field("attached_plans")
+    private List<AttachedPlan> attachedPlans = new ArrayList<>();
 
     @Field("total_data_allowance_mb")
     private Integer totalDataAllowanceMB = 0;
@@ -72,9 +106,9 @@ public class MockEsim {
     @Field("updated_at")
     private LocalDateTime updatedAt;
 
-    public static class AttachedBundle {
-        private String bundleId;
-        private String bundleName;
+    public static class AttachedPlan {
+        private String productId;
+        private String planName;
         private LocalDateTime attachedAt;
         private LocalDateTime expiryDate;
         private Integer dataAllowanceMB;
@@ -85,11 +119,11 @@ public class MockEsim {
         private String packageType;
 
         // Getters and Setters
-        public String getBundleId() { return bundleId; }
-        public void setBundleId(String bundleId) { this.bundleId = bundleId; }
+        public String getProductId() { return productId; }
+        public void setProductId(String productId) { this.productId = productId; }
 
-        public String getBundleName() { return bundleName; }
-        public void setBundleName(String bundleName) { this.bundleName = bundleName; }
+        public String getPlanName() { return planName; }
+        public void setPlanName(String planName) { this.planName = planName; }
 
         public LocalDateTime getAttachedAt() { return attachedAt; }
         public void setAttachedAt(LocalDateTime attachedAt) { this.attachedAt = attachedAt; }
@@ -133,32 +167,32 @@ public class MockEsim {
     public MockEsim() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.attachedBundles = new ArrayList<>();
+        this.attachedPlans = new ArrayList<>();
     }
 
     // Helper methods
-    public void addBundle(AttachedBundle bundle) {
-        if (this.attachedBundles == null) {
-            this.attachedBundles = new ArrayList<>();
+    public void addPlan(AttachedPlan plan) {
+        if (this.attachedPlans == null) {
+            this.attachedPlans = new ArrayList<>();
         }
-        this.attachedBundles.add(bundle);
+        this.attachedPlans.add(plan);
         recalculateTotals();
     }
 
     public void recalculateTotals() {
-        this.totalDataAllowanceMB = attachedBundles.stream()
-            .filter(b -> "active".equals(b.getStatus()))
-            .mapToInt(AttachedBundle::getDataAllowanceMB)
+        this.totalDataAllowanceMB = attachedPlans.stream()
+            .filter(p -> "active".equals(p.getStatus()))
+            .mapToInt(AttachedPlan::getDataAllowanceMB)
             .sum();
-        this.totalDataUsedMB = attachedBundles.stream()
-            .mapToInt(b -> b.getDataUsedMB() != null ? b.getDataUsedMB() : 0)
+        this.totalDataUsedMB = attachedPlans.stream()
+            .mapToInt(p -> p.getDataUsedMB() != null ? p.getDataUsedMB() : 0)
             .sum();
     }
 
     public Integer getTotalRemainingDataMB() {
-        return attachedBundles.stream()
-            .filter(b -> "active".equals(b.getStatus()))
-            .mapToInt(b -> b.getRemainingDataMB() != null ? b.getRemainingDataMB() : 0)
+        return attachedPlans.stream()
+            .filter(p -> "active".equals(p.getStatus()))
+            .mapToInt(p -> p.getRemainingDataMB() != null ? p.getRemainingDataMB() : 0)
             .sum();
     }
 
@@ -168,6 +202,9 @@ public class MockEsim {
 
     public String getEsimId() { return esimId; }
     public void setEsimId(String esimId) { this.esimId = esimId; }
+
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
 
     public String getIccid() { return iccid; }
     public void setIccid(String iccid) { this.iccid = iccid; }
@@ -184,11 +221,41 @@ public class MockEsim {
     public String getActivationCode() { return activationCode; }
     public void setActivationCode(String activationCode) { this.activationCode = activationCode; }
 
+    public String getManualCode() { return manualCode; }
+    public void setManualCode(String manualCode) { this.manualCode = manualCode; }
+
+    public String getSmdpAddress() { return smdpAddress; }
+    public void setSmdpAddress(String smdpAddress) { this.smdpAddress = smdpAddress; }
+
+    public Boolean getAutoApn() { return autoApn; }
+    public void setAutoApn(Boolean autoApn) { this.autoApn = autoApn; }
+
+    public String getApn() { return apn; }
+    public void setApn(String apn) { this.apn = apn; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) {
         this.status = status;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
+
+    public String getServiceStatus() { return serviceStatus; }
+    public void setServiceStatus(String serviceStatus) { this.serviceStatus = serviceStatus; }
+
+    public String getNetworkStatus() { return networkStatus; }
+    public void setNetworkStatus(String networkStatus) { this.networkStatus = networkStatus; }
+
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
+
+    public String getTag() { return tag; }
+    public void setTag(String tag) { this.tag = tag; }
+
+    public LocalDateTime getDateAssigned() { return dateAssigned; }
+    public void setDateAssigned(LocalDateTime dateAssigned) { this.dateAssigned = dateAssigned; }
 
     public String getUserEmail() { return userEmail; }
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
@@ -199,8 +266,8 @@ public class MockEsim {
     public java.util.Map<String, Object> getMetadata() { return metadata; }
     public void setMetadata(java.util.Map<String, Object> metadata) { this.metadata = metadata; }
 
-    public List<AttachedBundle> getAttachedBundles() { return attachedBundles; }
-    public void setAttachedBundles(List<AttachedBundle> attachedBundles) { this.attachedBundles = attachedBundles; }
+    public List<AttachedPlan> getAttachedPlans() { return attachedPlans; }
+    public void setAttachedPlans(List<AttachedPlan> attachedPlans) { this.attachedPlans = attachedPlans; }
 
     public Integer getTotalDataAllowanceMB() { return totalDataAllowanceMB; }
     public void setTotalDataAllowanceMB(Integer totalDataAllowanceMB) { this.totalDataAllowanceMB = totalDataAllowanceMB; }

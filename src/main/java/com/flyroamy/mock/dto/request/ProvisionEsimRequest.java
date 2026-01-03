@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class ProvisionEsimRequest {
 
-    @NotBlank(message = "Bundle ID is required")
-    private String bundleId;
+    @NotBlank(message = "Product ID is required")
+    private String productId;
 
     @Email(message = "Valid email is required")
     private String userEmail;
@@ -18,8 +18,8 @@ public class ProvisionEsimRequest {
     private Map<String, Object> metadata;
 
     // Getters and Setters
-    public String getBundleId() { return bundleId; }
-    public void setBundleId(String bundleId) { this.bundleId = bundleId; }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
 
     public String getUserEmail() { return userEmail; }
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }

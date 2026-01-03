@@ -9,18 +9,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@Document(collection = "mock_bundles")
-public class MockBundle {
+@Document(collection = "mock_products")
+public class MockProduct {
 
     @Id
     private String id;
 
-    @Field("bundle_id")
-    @Indexed(unique = true)
-    private String bundleId;
-
     @Field("product_id")
-    private Integer productId;
+    @Indexed(unique = true)
+    private String productId;
+
+    @Field("uid")
+    @Indexed(unique = true)
+    private String uid; // Maya API UID
 
     @Field("name")
     private String name;
@@ -28,11 +29,48 @@ public class MockBundle {
     @Field("description")
     private String description;
 
-    @Field("data_gb")
-    private Double dataGB;
+    @Field("countries_enabled")
+    private List<String> countriesEnabled;
+
+    @Field("data_quota_mb")
+    private Integer dataQuotaMb;
+
+    @Field("data_quota_bytes")
+    private Long dataQuotaBytes;
 
     @Field("validity_days")
     private Integer validityDays;
+
+    @Field("policy_id")
+    private String policyId;
+
+    @Field("policy_name")
+    private String policyName;
+
+    @Field("wholesale_price_usd")
+    private Double wholesalePriceUsd;
+
+    @Field("rrp_usd")
+    private Double rrpUsd;
+
+    @Field("rrp_eur")
+    private Double rrpEur;
+
+    @Field("rrp_gbp")
+    private Double rrpGbp;
+
+    @Field("rrp_cad")
+    private Double rrpCad;
+
+    @Field("rrp_aud")
+    private Double rrpAud;
+
+    @Field("rrp_jpy")
+    private Double rrpJpy;
+
+    // Legacy fields for backward compatibility
+    @Field("data_gb")
+    private Double dataGB;
 
     @Field("price")
     private Double price;
@@ -61,9 +99,6 @@ public class MockBundle {
 
     @Field("is_active")
     private boolean isActive = true;
-
-    @Field("badge")
-    private String badge;
 
     @Field("unlimited_type")
     private String unlimitedType;
@@ -101,7 +136,7 @@ public class MockBundle {
     }
 
     // Constructors
-    public MockBundle() {
+    public MockProduct() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -110,11 +145,11 @@ public class MockBundle {
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getBundleId() { return bundleId; }
-    public void setBundleId(String bundleId) { this.bundleId = bundleId; }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
 
-    public Integer getProductId() { return productId; }
-    public void setProductId(Integer productId) { this.productId = productId; }
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -122,11 +157,47 @@ public class MockBundle {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public Double getDataGB() { return dataGB; }
-    public void setDataGB(Double dataGB) { this.dataGB = dataGB; }
+    public List<String> getCountriesEnabled() { return countriesEnabled; }
+    public void setCountriesEnabled(List<String> countriesEnabled) { this.countriesEnabled = countriesEnabled; }
+
+    public Integer getDataQuotaMb() { return dataQuotaMb; }
+    public void setDataQuotaMb(Integer dataQuotaMb) { this.dataQuotaMb = dataQuotaMb; }
+
+    public Long getDataQuotaBytes() { return dataQuotaBytes; }
+    public void setDataQuotaBytes(Long dataQuotaBytes) { this.dataQuotaBytes = dataQuotaBytes; }
 
     public Integer getValidityDays() { return validityDays; }
     public void setValidityDays(Integer validityDays) { this.validityDays = validityDays; }
+
+    public String getPolicyId() { return policyId; }
+    public void setPolicyId(String policyId) { this.policyId = policyId; }
+
+    public String getPolicyName() { return policyName; }
+    public void setPolicyName(String policyName) { this.policyName = policyName; }
+
+    public Double getWholesalePriceUsd() { return wholesalePriceUsd; }
+    public void setWholesalePriceUsd(Double wholesalePriceUsd) { this.wholesalePriceUsd = wholesalePriceUsd; }
+
+    public Double getRrpUsd() { return rrpUsd; }
+    public void setRrpUsd(Double rrpUsd) { this.rrpUsd = rrpUsd; }
+
+    public Double getRrpEur() { return rrpEur; }
+    public void setRrpEur(Double rrpEur) { this.rrpEur = rrpEur; }
+
+    public Double getRrpGbp() { return rrpGbp; }
+    public void setRrpGbp(Double rrpGbp) { this.rrpGbp = rrpGbp; }
+
+    public Double getRrpCad() { return rrpCad; }
+    public void setRrpCad(Double rrpCad) { this.rrpCad = rrpCad; }
+
+    public Double getRrpAud() { return rrpAud; }
+    public void setRrpAud(Double rrpAud) { this.rrpAud = rrpAud; }
+
+    public Double getRrpJpy() { return rrpJpy; }
+    public void setRrpJpy(Double rrpJpy) { this.rrpJpy = rrpJpy; }
+
+    public Double getDataGB() { return dataGB; }
+    public void setDataGB(Double dataGB) { this.dataGB = dataGB; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
@@ -154,9 +225,6 @@ public class MockBundle {
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
-
-    public String getBadge() { return badge; }
-    public void setBadge(String badge) { this.badge = badge; }
 
     public String getUnlimitedType() { return unlimitedType; }
     public void setUnlimitedType(String unlimitedType) { this.unlimitedType = unlimitedType; }

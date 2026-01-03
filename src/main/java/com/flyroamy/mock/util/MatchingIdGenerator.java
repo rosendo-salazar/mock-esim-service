@@ -40,6 +40,22 @@ public class MatchingIdGenerator {
     }
 
     /**
+     * Generates a manual activation code
+     * Format: 32 character alphanumeric uppercase
+     *
+     * @return A manual code string
+     */
+    public String generateManualCode() {
+        return UUID.randomUUID().toString()
+            .replace("-", "")
+            .toUpperCase() +
+            UUID.randomUUID().toString()
+            .replace("-", "")
+            .substring(0, 16)
+            .toUpperCase();
+    }
+
+    /**
      * Generates LPA activation string for QR code
      * Format: LPA:1$smdp.example.com$ACTIVATION_CODE
      *

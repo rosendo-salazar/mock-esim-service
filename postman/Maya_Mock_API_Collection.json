@@ -34,12 +34,16 @@
       "value": "maya_test_secret"
     },
     {
-      "key": "test_esim_id",
+      "key": "test_iccid",
       "value": ""
     },
     {
-      "key": "test_bundle_id",
-      "value": "bundle_usa_5gb_30d"
+      "key": "test_product_uid",
+      "value": "product_usa_5gb_30d"
+    },
+    {
+      "key": "test_plan_type_id",
+      "value": "plan_usa_5gb_30d"
     }
   ],
   "item": [
@@ -67,10 +71,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles?size=1",
+              "raw": "{{base_url}}/connectivity/v1/account/products",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles"],
-              "query": [{"key": "size", "value": "1"}]
+              "path": ["connectivity", "v1", "account", "products"]
             }
           }
         },
@@ -87,108 +90,109 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles",
+              "raw": "{{base_url}}/connectivity/v1/account/products",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles"]
+              "path": ["connectivity", "v1", "account", "products"]
             }
           }
         }
       ]
     },
     {
-      "name": "02. Bundles (Plans)",
+      "name": "02. Account & Products",
       "item": [
         {
-          "name": "List All Bundles",
+          "name": "Get Account Balance",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles",
+              "raw": "{{base_url}}/connectivity/v1/account/balance",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles"]
+              "path": ["connectivity", "v1", "account", "balance"]
             }
           }
         },
         {
-          "name": "Get Bundle by ID",
+          "name": "Get All Products",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles/{{test_bundle_id}}",
+              "raw": "{{base_url}}/connectivity/v1/account/products",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles", "{{test_bundle_id}}"]
+              "path": ["connectivity", "v1", "account", "products"]
             }
           }
         },
         {
-          "name": "Filter by Country (US)",
+          "name": "Get Product by ID",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles?country=us",
+              "raw": "{{base_url}}/connectivity/v1/account/products/{{test_product_uid}}",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles"],
+              "path": ["connectivity", "v1", "account", "products", "{{test_product_uid}}"]
+            }
+          }
+        },
+        {
+          "name": "Filter Products by Country (US)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/account/products?country=us",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "account", "products"],
               "query": [{"key": "country", "value": "us"}]
             }
           }
         },
         {
-          "name": "Filter by Region (Europe)",
+          "name": "Filter Products by Region (Europe)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles?region=europe",
+              "raw": "{{base_url}}/connectivity/v1/account/products?region=europe",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles"],
+              "path": ["connectivity", "v1", "account", "products"],
               "query": [{"key": "region", "value": "europe"}]
             }
           }
         },
         {
-          "name": "Filter by Package Type (global)",
+          "name": "Product Not Found",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles?packageType=global",
+              "raw": "{{base_url}}/connectivity/v1/account/products/nonexistent_product",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles"],
-              "query": [{"key": "packageType", "value": "global"}]
-            }
-          }
-        },
-        {
-          "name": "Bundle Not Found",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/v1/connectivity/bundles/nonexistent_bundle",
-              "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "bundles", "nonexistent_bundle"]
+              "path": ["connectivity", "v1", "account", "products", "nonexistent_product"]
             }
           }
         }
       ]
     },
     {
-      "name": "03. eSIM Provisioning",
+      "name": "03. eSIM Creation",
       "item": [
         {
-          "name": "Provision New eSIM",
+          "name": "Create New eSIM",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 201) {",
+                  "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('test_esim_id', jsonData.esimId);",
-                  "    console.log('Saved esimId:', jsonData.esimId);",
+                  "    if (jsonData.iccid) {",
+                  "        pm.collectionVariables.set('test_iccid', jsonData.iccid);",
+                  "        console.log('Saved ICCID:', jsonData.iccid);",
+                  "    }",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -200,28 +204,44 @@
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bundleId\": \"{{test_bundle_id}}\",\n  \"userEmail\": \"test@example.com\",\n  \"profileType\": \"consumer\",\n  \"metadata\": {\n    \"orderId\": \"order_{{$timestamp}}\",\n    \"userId\": \"user_123\"\n  }\n}"
+              "raw": "{\n  \"plan_type_id\": \"{{test_plan_type_id}}\",\n  \"region\": \"us\",\n  \"customer_id\": \"customer_{{$timestamp}}\",\n  \"tag\": \"test-order-{{$timestamp}}\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims",
+              "raw": "{{base_url}}/connectivity/v1/esim",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims"]
+              "path": ["connectivity", "v1", "esim"]
             }
           }
         },
         {
-          "name": "Provision with Invalid Bundle",
+          "name": "Create eSIM - Minimal",
           "request": {
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bundleId\": \"invalid_bundle\",\n  \"userEmail\": \"test@example.com\"\n}"
+              "raw": "{\n  \"plan_type_id\": \"{{test_plan_type_id}}\",\n  \"region\": \"us\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims",
+              "raw": "{{base_url}}/connectivity/v1/esim",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims"]
+              "path": ["connectivity", "v1", "esim"]
+            }
+          }
+        },
+        {
+          "name": "Create with Invalid Plan Type",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_type_id\": \"invalid_plan\",\n  \"region\": \"us\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/esim",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "esim"]
             }
           }
         }
@@ -236,34 +256,49 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims/{{test_esim_id}}",
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims", "{{test_esim_id}}"]
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}"]
             }
           }
         },
         {
-          "name": "List All eSIMs",
+          "name": "Get eSIM Plans",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims",
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}/plans",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims"]
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}", "plans"]
             }
           }
         },
         {
-          "name": "List eSIMs by Status (active)",
+          "name": "Get eSIM Regions",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims?status=active",
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}/regions",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims"],
-              "query": [{"key": "status", "value": "active"}]
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}", "regions"]
+            }
+          }
+        },
+        {
+          "name": "Change eSIM (Update)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag\": \"updated-tag-{{$timestamp}}\",\n  \"customer_id\": \"updated_customer_id\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}"]
             }
           }
         },
@@ -273,49 +308,98 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims/nonexistent_esim",
+              "raw": "{{base_url}}/connectivity/v1/esim/8900000000000000000",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims", "nonexistent_esim"]
+              "path": ["connectivity", "v1", "esim", "8900000000000000000"]
             }
           }
         }
       ]
     },
     {
-      "name": "05. Multi-Plan (Top-Off)",
+      "name": "05. Top Up (Create Plan)",
       "item": [
         {
-          "name": "Attach Additional Bundle",
+          "name": "Top Up eSIM (Add Plan)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"bundleId\": \"bundle_usa_10gb_30d\",\n  \"activationType\": \"immediate\",\n  \"stackData\": true\n}"
-            },
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims/{{test_esim_id}}/bundles",
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}/plan/{{test_plan_type_id}}",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims", "{{test_esim_id}}", "bundles"]
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}", "plan", "{{test_plan_type_id}}"]
             }
           }
         },
         {
-          "name": "Get eSIM with Multiple Bundles",
+          "name": "Top Up with Different Plan",
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims/{{test_esim_id}}",
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}/plan/plan_usa_10gb_30d",
               "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims", "{{test_esim_id}}"]
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}", "plan", "plan_usa_10gb_30d"]
+            }
+          }
+        },
+        {
+          "name": "Top Up - Invalid Plan Type",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}/plan/invalid_plan",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}", "plan", "invalid_plan"]
+            }
+          }
+        },
+        {
+          "name": "Top Up - Invalid ICCID",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/esim/8900000000000000000/plan/{{test_plan_type_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "esim", "8900000000000000000", "plan", "{{test_plan_type_id}}"]
             }
           }
         }
       ]
     },
     {
-      "name": "06. Usage Simulation",
+      "name": "06. eSIM Deletion",
+      "item": [
+        {
+          "name": "Delete eSIM",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/esim/{{test_iccid}}",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "esim", "{{test_iccid}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Non-Existent eSIM",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/connectivity/v1/esim/8900000000000000000",
+              "host": ["{{base_url}}"],
+              "path": ["connectivity", "v1", "esim", "8900000000000000000"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Usage Simulation (Admin)",
       "item": [
         {
           "name": "Simulate Data Usage (100MB)",
@@ -324,7 +408,7 @@
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"esimId\": \"{{test_esim_id}}\",\n  \"usageMB\": 100\n}"
+              "raw": "{\n  \"iccid\": \"{{test_iccid}}\",\n  \"usageMB\": 100\n}"
             },
             "url": {
               "raw": "{{base_url}}/v1/admin/simulate/usage",
@@ -340,7 +424,7 @@
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"esimId\": \"{{test_esim_id}}\",\n  \"usageMB\": 5000\n}"
+              "raw": "{\n  \"iccid\": \"{{test_iccid}}\",\n  \"usageMB\": 5000\n}"
             },
             "url": {
               "raw": "{{base_url}}/v1/admin/simulate/usage",
@@ -352,7 +436,7 @@
       ]
     },
     {
-      "name": "07. Admin Operations",
+      "name": "08. Admin Operations",
       "item": [
         {
           "name": "Get Statistics",
@@ -367,13 +451,13 @@
           }
         },
         {
-          "name": "Force Status Change (expired)",
+          "name": "Force Status Change",
           "request": {
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"esimId\": \"{{test_esim_id}}\",\n  \"newStatus\": \"expired\",\n  \"reason\": \"Testing expiration flow\"\n}"
+              "raw": "{\n  \"iccid\": \"{{test_iccid}}\",\n  \"newStatus\": \"expired\",\n  \"reason\": \"Testing expiration flow\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/v1/admin/simulate/status",
@@ -409,23 +493,6 @@
       ]
     },
     {
-      "name": "08. Deactivation",
-      "item": [
-        {
-          "name": "Deactivate eSIM",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/v1/connectivity/esims/{{test_esim_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["v1", "connectivity", "esims", "{{test_esim_id}}"]
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "09. QR Codes",
       "item": [
         {
@@ -435,9 +502,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/qr/{{test_esim_id}}",
+              "raw": "{{base_url}}/qr/{{test_iccid}}",
               "host": ["{{base_url}}"],
-              "path": ["qr", "{{test_esim_id}}"]
+              "path": ["qr", "{{test_iccid}}"]
             }
           }
         },
@@ -448,9 +515,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/qr/{{test_esim_id}}/base64",
+              "raw": "{{base_url}}/qr/{{test_iccid}}/base64",
               "host": ["{{base_url}}"],
-              "path": ["qr", "{{test_esim_id}}", "base64"]
+              "path": ["qr", "{{test_iccid}}", "base64"]
             }
           }
         }

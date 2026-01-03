@@ -2,11 +2,10 @@ package com.flyroamy.mock.controller;
 
 import com.flyroamy.mock.dto.request.ForceStatusRequest;
 import com.flyroamy.mock.dto.request.SimulateUsageRequest;
-import com.flyroamy.mock.model.MockBundle;
 import com.flyroamy.mock.model.MockEsim;
-import com.flyroamy.mock.service.BundleService;
 import com.flyroamy.mock.service.DataSeederService;
 import com.flyroamy.mock.service.EsimService;
+import com.flyroamy.mock.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,12 +25,12 @@ public class AdminController {
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     private final EsimService esimService;
-    private final BundleService bundleService;
+    private final ProductService productService;
     private final DataSeederService dataSeederService;
 
-    public AdminController(EsimService esimService, BundleService bundleService, DataSeederService dataSeederService) {
+    public AdminController(EsimService esimService, ProductService productService, DataSeederService dataSeederService) {
         this.esimService = esimService;
-        this.bundleService = bundleService;
+        this.productService = productService;
         this.dataSeederService = dataSeederService;
     }
 
@@ -43,7 +42,7 @@ public class AdminController {
             "service", "mock-esim-service",
             "timestamp", Instant.now().toString(),
             "statistics", Map.of(
-                "bundles", bundleService.getBundleCount(),
+                "products", productService.getProductCount(),
                 "esims", esimService.getStatistics()
             )
         ));
@@ -82,11 +81,12 @@ public class AdminController {
     }
 
     @DeleteMapping("/reset")
-    @Operation(summary = "Reset all data", description = "Delete all eSIMs and reset to initial state")
+    @Operation(summary = "Reset all data", description = "Delete all eSIMs and products, reset to initial state")
     public ResponseEntity<Map<String, Object>> resetData() {
         logger.warn("Resetting all data");
 
         esimService.deleteAll();
+        productService.deleteAll();
 
         return ResponseEntity.ok(Map.of(
             "success", true,
@@ -95,16 +95,16 @@ public class AdminController {
     }
 
     @PostMapping("/seed")
-    @Operation(summary = "Seed test data", description = "Seed the database with test bundles")
+    @Operation(summary = "Seed test data", description = "Seed the database with test products")
     public ResponseEntity<Map<String, Object>> seedData() {
         logger.info("Seeding test data");
 
-        int bundlesCreated = dataSeederService.seedBundles();
+        int productsCreated = dataSeederService.seedProducts();
 
         return ResponseEntity.ok(Map.of(
             "success", true,
             "message", "Test data seeded successfully",
-            "bundlesCreated", bundlesCreated
+            "productsCreated", productsCreated
         ));
     }
 
@@ -112,8 +112,8 @@ public class AdminController {
     @Operation(summary = "Get statistics", description = "Get service statistics")
     public ResponseEntity<Map<String, Object>> getStatistics() {
         return ResponseEntity.ok(Map.of(
-            "bundles", Map.of(
-                "total", bundleService.getBundleCount()
+            "products", Map.of(
+                "total", productService.getProductCount()
             ),
             "esims", esimService.getStatistics()
         ));
